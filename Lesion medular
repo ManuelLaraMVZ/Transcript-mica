@@ -1,4 +1,4 @@
-Gene ID	Gene Name	'2 weeks after L5 spinal nerve ligation' vs 'control' .foldChange	'2 weeks after L5 spinal nerve ligation' vs 'control'.pValue
+Gene ID	Gene Name	FC	PV
 ENSRNOG00000000001	AABR07013255.1	3	1.27E-12
 ENSRNOG00000000007	Gad1	-0.2	0.501097434
 ENSRNOG00000000008	Alx4	-0.1	0.936649131
