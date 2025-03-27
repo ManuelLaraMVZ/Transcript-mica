@@ -1,0 +1,148 @@
+---
+title: "Amplificación RT-qPCR"
+author: "Manuel Lara Lozano"
+date: "2025-03-20"
+output: html_document
+---
+
+Ctrl+Alt+I / Cmd+Opt+I
+
+Intalación de paquetes
+
+Pacman: llama a otros paquetes y si no están los instala
+
+```{r}
+
+if(!require(pacman))
+  install.packages("pacman")
+```
+
+Llamar a pacman
+
+```{r}
+library("pacman")
+```
+
+Llamar paqueteria necesaria
+
+```{r}
+p_load("vroom",
+       "dplyr",
+       "ggplot2",
+       "tidyr")
+```
+
+Llamar a base de datos
+
+```{r}
+
+Curvas_amplif <- vroom(file = "https://raw.githubusercontent.com/ManuelLaraMVZ/resultados_PCR_practica/refs/heads/main/Ejemplo_amplificacion_RT-PCR.csv")
+
+Curvas_amplif
+
+```
+
+Modificar base de datos
+
+```{r}
+
+Curvas_amplif2 <- Curvas_amplif %>% #Ctrl/Cmnd+Shift+M
+  mutate(Ciclos = Cycle, H2O = A1, JRWF = B1, PPOF = C1, MLL = D1, DDR = E1) %>% 
+  select(-Cycle:-E1) %>% 
+  filter(Ciclos >=17)
+Curvas_amplif2
+```
+
+Reordenamiento de datos
+
+1.  Seleccionar los datos a reordenar (variables dependientes).
+
+2.  Agruparé todas variables por nombre.
+
+3.  Agruparé todas las variables por ciclo.
+
+    ```{r}
+
+    Curvas_amplif3 <- Curvas_amplif2 %>% 
+      pivot_longer(cols = -Ciclos,
+                   names_to = "Muestras",
+                   values_to = "Flourescencias")
+
+    Curvas_amplif3
+    ```
+
+Gráfica
+
+```{r}
+Grafica_amplif <- ggplot(data = Curvas_amplif3,
+                         mapping = aes(x = Ciclos,
+                                       y = Flourescencias,
+                                       color = Muestras)) +
+  geom_line ( linewidth = 1.5)
+
+Grafica_amplif
+                           
+```
+
+Mejorar la gráfica
+
+```{r}
+Umbral_ciclos <- 0.008
+
+Grafica_amplif2 <- Grafica_amplif +
+  geom_hline(yintercept = Umbral_ciclos, linetype = "dashed", color = "#581845")+
+  theme_classic()+
+  labs(title = "Curvas de amplificación RT-qPCR", 
+       subtitle = "Todas las muestras",
+       caption = "Diseñó: Manuel Lara",
+       x = "Cilos",
+       y = "Fluorescencia (u.a.)")+
+  theme(axis.line = element_line (size = 1.2, color = "black"),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(face = "bold"))+
+  scale_x_continuous(breaks = seq(min(Curvas_amplif3$Ciclos), 
+                                  max(Curvas_amplif3$Ciclos),
+                                  by = 2))+
+  scale_y_continuous(breaks = seq(min(Curvas_amplif3$Flourescencias), 
+                                  max(Curvas_amplif3$Flourescencias),
+                                  by = 0.02),
+                     labels = scales::number_format(accuracy = 0.02))
+
+Grafica_amplif2
+
+```
+
+Grafica de los datos del equipo
+
+```{r}
+Grafica_amplif_equipo <- ggplot(Curvas_amplif2, aes(x = Ciclos)) +
+  geom_line(aes(y = MLL, color = "MLL"), linewidth = 1.5) +
+  geom_line(aes(y = H2O, color = "H2O"), linewidth = 1.5) +
+  geom_hline(yintercept = Umbral_ciclos, linetype = "dashed", color = "#581845") +
+  scale_color_manual(values = c("MLL" = "#1e2f7c", "H2O" = "#900C3F")) +
+  theme_classic() +
+  labs(title = "Curvas de amplificación RT-qPCR", 
+       subtitle = "Todas las muestras",
+       caption = "Diseñó: Manuel Lara",
+       x = "Ciclos",
+       y = "Fluorescencia (u.a.)",
+       color = "Muestras") +  # Título de la leyenda
+  theme(axis.line = element_line(size = 1.2, color = "black"),
+        axis.title = element_text(face = "bold"),
+        axis.text = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(face = "bold")) +
+  scale_x_continuous(breaks = seq(min(Curvas_amplif2$Ciclos), 
+                                  max(Curvas_amplif2$Ciclos),
+                                  by = 2)) +
+  scale_y_continuous(breaks = seq(min(Curvas_amplif2$MLL), 
+                                  max(Curvas_amplif2$MLL),
+                                  by = 0.02),
+                     labels = scales::number_format(accuracy = 0.02))
+
+Grafica_amplif_equipo
+
+
+```
